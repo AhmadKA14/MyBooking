@@ -1,13 +1,14 @@
 import "./list.css"
 import Navbar from "../../components/navbar/Navbar"
 import Header from "../../components/header/Header"
-import { useLocation } from "react-router-dom"
-import { useState } from "react"
+import { useLocation, useNavigate } from "react-router-dom"
+import { useContext, useState } from "react"
 import { format } from "date-fns"
 import { DateRange } from "react-date-range"
 import SearchItem from "../../components/searchItem/SearchItem"
 import useFetch from "../../hooks/useFetch"
 import LoadingScreen from 'react-loading-screen';
+import { SearchContext } from "../../context/SearchContext"
 
 const List = () => {
     const location = useLocation()
@@ -22,8 +23,14 @@ const List = () => {
         `hotels?city=${destination.toString().toLowerCase()}&min=${min || 0}&max=${max || 999}`
     )
 
+    const navigate = useNavigate()
+    const { dispatch } = useContext(SearchContext)
+
     const handleClick = () => {
+        setOpenDates(!openDates)
         reFetch()
+        dispatch({ type: "NEW_SEARCH", payload: { destination, dates, options } })
+        navigate("/hotels", { state: { destination, dates, options } })
     }
 
     return (
@@ -36,7 +43,11 @@ const List = () => {
                         <h1 className="lsTitle">Search</h1>
                         <div className="lsItem">
                             <label>Destination</label>
-                            <input placeholder={destination} type="text" />
+                            <input
+                                placeholder={destination}
+                                type="text"
+                                onChange={e => setDestination(e.target.value)}
+                            />
                         </div>
                         <div className="lsItem">
                             <label>Check-in Date</label>
@@ -75,7 +86,7 @@ const List = () => {
                                     <input
                                         type="number"
                                         className="lsOptionInput"
-                                        placeholder={options.adults}
+                                        placeholder={options.adult}
                                         min={1}
                                     />
                                 </div>
